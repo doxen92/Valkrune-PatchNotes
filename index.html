@@ -41,6 +41,7 @@
     --cat-combat:     #ec5a78;
     --cat-mp:         #5fdfee;
     --cat-vfx:        #d35fd0;
+    --cat-audio:      #5fa7ff;
     --cat-resil:      #50d9b0;
     --cat-tools:      #f5a766;
     --shadow-card:    0 4px 24px rgba(0, 0, 0, 0.4);
@@ -86,9 +87,7 @@
     z-index: 1;
   }
 
-  /* ============================================================
-     HERO
-     ============================================================ */
+  /* HERO */
   .hero {
     padding: 90px 0 60px;
     text-align: center;
@@ -129,9 +128,6 @@
     font-weight: 600;
   }
 
-  /* ============================================================
-     LATEST PATCH HIGHLIGHT
-     ============================================================ */
   section { padding: 72px 0; }
 
   .section-eyebrow {
@@ -153,7 +149,7 @@
     letter-spacing: -0.015em;
   }
 
-  /* Featured patch card */
+  /* FEATURED CARD */
   .featured-card {
     display: block;
     background: linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
@@ -285,9 +281,7 @@
 
   .featured-card:hover .read-more::after { transform: translateX(4px); }
 
-  /* ============================================================
-     PATCH LIST (compact)
-     ============================================================ */
+  /* PATCH LIST */
   .patch-list {
     display: flex;
     flex-direction: column;
@@ -347,7 +341,6 @@
     color: var(--text-faint);
   }
 
-  /* Coming soon placeholder */
   .coming-soon {
     background: transparent;
     border: 1px dashed var(--border-medium);
@@ -374,9 +367,7 @@
     font-style: italic;
   }
 
-  /* ============================================================
-     RELEASE BANNER
-     ============================================================ */
+  /* RELEASE BANNER */
   .release-banner {
     margin: 0 auto;
     max-width: 640px;
@@ -437,9 +428,7 @@
     margin: 0 auto;
   }
 
-  /* ============================================================
-     FOOTER
-     ============================================================ */
+  /* FOOTER */
   footer {
     margin-top: 80px;
     padding: 40px 0 60px;
@@ -493,33 +482,38 @@
   <div class="container">
     <div class="section-eyebrow">Latest Release</div>
 
-    <a class="featured-card" href="0.0.3/">
+    <a class="featured-card" href="0.0.4/">
       <div class="featured-card-head">
         <span class="latest-badge">Latest</span>
-        <span class="patch-version">v0.0.3</span>
-        <span class="patch-date">2026-05-07</span>
+        <span class="patch-version">v0.0.4</span>
+        <span class="patch-date">2026-05-13</span>
       </div>
 
-      <h2 class="featured-title">Multiplayer Stability &amp; Visual Fixes</h2>
+      <h2 class="featured-title">Closed Alpha Polish Pass</h2>
 
       <p class="featured-desc">
-        Combat polish session focused on multiplayer feel. Damage cooldown tightened so legitimate hits register reliably,
-        five state-sync issues resolved between host and clients, complete VFX broadcast pipeline, and a 600ms death-grace
-        period so players can read what just happened. Includes the Time-to-Kill curve update for the new 60 HP base.
+        The biggest patch yet — three sessions merged into one release. A complete audio pipeline (13 systems shipped over four days),
+        the new Bug Report system that posts straight from <strong>F8</strong> to Discord, a balance overhaul that finally kills the
+        level-1 oneshot, premium AAA-style player name HUDs, and a log-spam cleanup that took roughly 53,000 rows per match down to zero.
+        Nine days until Closed Alpha launches.
       </p>
 
       <div class="featured-stats">
         <div>
+          <div class="featured-stat-num">13</div>
+          <div class="featured-stat-label">Audio Systems</div>
+        </div>
+        <div>
+          <div class="featured-stat-num">2</div>
+          <div class="featured-stat-label">New Pipelines</div>
+        </div>
+        <div>
           <div class="featured-stat-num">15</div>
-          <div class="featured-stat-label">Fixes Shipped</div>
+          <div class="featured-stat-label">Bugs Squashed</div>
         </div>
         <div>
-          <div class="featured-stat-num">5</div>
-          <div class="featured-stat-label">Systems Touched</div>
-        </div>
-        <div>
-          <div class="featured-stat-num">7</div>
-          <div class="featured-stat-label">NetVar Syncs</div>
+          <div class="featured-stat-num">53,000</div>
+          <div class="featured-stat-label">Logs Killed</div>
         </div>
       </div>
 
@@ -536,6 +530,16 @@
 
     <div class="patch-list">
 
+      <!-- 0.0.4 -->
+      <a class="patch-list-item" href="0.0.4/">
+        <div class="patch-list-version">v0.0.4</div>
+        <div class="patch-list-content">
+          <div class="patch-list-title">Closed Alpha Polish Pass</div>
+          <div class="patch-list-desc">13 audio systems, Bug Report pipeline, balance overhaul, premium player HUDs, 53k logs killed</div>
+        </div>
+        <div class="patch-list-date">2026-05-13</div>
+      </a>
+
       <!-- 0.0.3 -->
       <a class="patch-list-item" href="0.0.3/">
         <div class="patch-list-version">v0.0.3</div>
@@ -546,14 +550,12 @@
         <div class="patch-list-date">2026-05-07</div>
       </a>
 
-      <!-- Add 0.0.4, 0.0.5 etc. here as new entries -->
-
     </div>
 
     <!-- Coming soon -->
     <div class="coming-soon">
       <div class="coming-soon-label">Coming Soon</div>
-      <div class="coming-soon-text">Patch v0.0.4 — in development</div>
+      <div class="coming-soon-text">Patch v0.0.5 — alpha launch + post-launch polish</div>
     </div>
   </div>
 </section>
