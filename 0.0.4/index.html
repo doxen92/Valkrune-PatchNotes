@@ -1,0 +1,2719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Valkrune — Patch v0.0.4</title>
+
+<!-- Open Graph / Discord / Twitter previews -->
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Valkrune — Patch v0.0.4" />
+<meta property="og:description" content="Closed Alpha Prep — 13 audio systems shipped, Bug Report pipeline live, balance overhaul eliminates the level-1 oneshot, 53,000 log rows killed. The biggest patch yet." />
+<meta property="og:url" content="https://doxen92.github.io/Valkrune-PatchNotes/0.0.4/" />
+<meta property="og:site_name" content="Valkrune" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Valkrune — Patch v0.0.4" />
+<meta name="twitter:description" content="The Sound of Battle — 13 audio systems, F8 bug reports, balance overhaul, premium player HUDs." />
+<meta name="theme-color" content="#7c5cff" />
+<meta name="description" content="Valkrune Patch v0.0.4 — Closed Alpha Prep. Audio pipeline, Bug Report system, balance overhaul, premium player name HUDs. Closed Alpha opens May 22, 2026." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     COLOR + TYPE TOKENS
+     ============================================================ */
+  :root {
+    --bg-deep:        #0a0814;
+    --bg-base:        #0f0c1c;
+    --bg-elevated:    #15122a;
+    --bg-card:        #1a1632;
+    --bg-card-hover:  #1f1a3a;
+
+    --border-soft:    #2a2348;
+    --border-medium:  #3a2f5e;
+    --border-strong:  #4a3d75;
+
+    --text-primary:   #f5f3ff;
+    --text-secondary: #cec7ee;
+    --text-muted:     #8a8398;
+    --text-faint:     #5e5878;
+
+    --purple-bright:  #8a6bff;
+    --purple-mid:     #7c5cff;
+    --purple-soft:    #5d4799;
+    --purple-glow:    rgba(124, 92, 255, 0.18);
+
+    --cat-combat:     #ec5a78;   /* red-pink — combat/balance */
+    --cat-combat-2:   #ff7088;
+    --cat-mp:         #5fdfee;   /* cyan — MP state sync */
+    --cat-mp-2:       #88e9f4;
+    --cat-vfx:        #d35fd0;   /* magenta — VFX/visual */
+    --cat-vfx-2:      #e87ce5;
+    --cat-audio:      #5fa7ff;   /* blue — audio */
+    --cat-audio-2:    #7eb9ff;
+    --cat-resil:      #50d9b0;   /* teal-green — new features */
+    --cat-resil-2:    #6fe6c2;
+    --cat-tools:      #f5a766;   /* orange — tooling/dev */
+    --cat-tools-2:    #f8bd8a;
+    --cat-targeting:  #b478ff;   /* purple — UI/HUD */
+    --cat-targeting-2:#c895ff;
+    --cat-gold:       #d4b04a;   /* gold — AAA highlight */
+    --cat-gold-2:     #e6c66a;
+
+    --status-bad:     #ef5470;
+    --status-good:    #50d9b0;
+    --status-warn:    #f5a766;
+
+    --shadow-card:    0 4px 24px rgba(0, 0, 0, 0.4);
+    --shadow-card-hover: 0 8px 32px rgba(124, 92, 255, 0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(124, 92, 255, 0.08), transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(211, 95, 208, 0.04), transparent 50%),
+      radial-gradient(ellipse at 50% 100%, rgba(95, 223, 238, 0.04), transparent 50%),
+      var(--bg-deep);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,0.4), transparent),
+      radial-gradient(1px 1px at 78% 42%, rgba(255,255,255,0.3), transparent),
+      radial-gradient(1px 1px at 33% 73%, rgba(255,255,255,0.5), transparent),
+      radial-gradient(1px 1px at 88% 88%, rgba(255,255,255,0.3), transparent),
+      radial-gradient(1px 1px at 55% 11%, rgba(124,92,255,0.5), transparent),
+      radial-gradient(1px 1px at 22% 55%, rgba(211,95,208,0.4), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 32px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ============================================================
+     HERO
+     ============================================================ */
+  .hero {
+    padding: 64px 0 56px;
+    border-bottom: 1px solid var(--border-soft);
+    position: relative;
+  }
+
+  .hero-inner {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .hero-text { flex: 1; min-width: 380px; }
+
+  .game-name {
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.42em;
+    color: var(--purple-bright);
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+
+  .patch-title {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(40px, 6vw, 64px);
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-bottom: 14px;
+    letter-spacing: -0.025em;
+  }
+
+  .patch-subtitle {
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+  }
+
+  .alpha-badge {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(124, 92, 255, 0.1);
+    border: 1px solid var(--purple-soft);
+    border-radius: 4px;
+    padding: 14px 26px;
+    text-align: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .alpha-badge-label {
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: var(--purple-bright);
+    text-transform: uppercase;
+  }
+
+  .alpha-badge-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  /* TL;DR Intro */
+  .tldr {
+    margin-top: 36px;
+    padding: 22px 28px;
+    background: rgba(138, 107, 255, 0.07);
+    border-left: 3px solid var(--purple-bright);
+    border-radius: 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 880px;
+  }
+
+  .tldr strong { color: var(--purple-bright); font-weight: 600; }
+  .tldr code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(124, 92, 255, 0.15);
+    color: var(--purple-bright);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+
+  /* ============================================================
+     STATS STRIP
+     ============================================================ */
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--border-soft);
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    margin-top: 36px;
+    overflow: hidden;
+  }
+
+  @media (max-width: 768px) {
+    .stats-strip { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .stat-cell {
+    background: var(--bg-card);
+    padding: 22px 18px;
+    text-align: center;
+  }
+
+  .stat-number {
+    font-family: 'Sora', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--purple-bright);
+    line-height: 1;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  /* ============================================================
+     SECTION + HEADERS
+     ============================================================ */
+  section { padding: 72px 0; }
+
+  .section-header { text-align: center; margin-bottom: 48px; }
+
+  .section-eyebrow {
+    font-family: 'Sora', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    color: var(--purple-bright);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .section-eyebrow.eyebrow-combat { color: var(--cat-combat); }
+  .section-eyebrow.eyebrow-audio { color: var(--cat-audio); }
+  .section-eyebrow.eyebrow-tools { color: var(--cat-tools); }
+  .section-eyebrow.eyebrow-targeting { color: var(--cat-targeting); }
+  .section-eyebrow.eyebrow-gold { color: var(--cat-gold); }
+
+  .section-title {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(26px, 3.5vw, 36px);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    letter-spacing: -0.015em;
+  }
+
+  .section-subtitle {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--purple-bright);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* ============================================================
+     PLAYER NAME HUD SHOWCASE
+     ============================================================ */
+  .hud-showcase {
+    background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 48px 40px;
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hud-showcase::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--cat-targeting), var(--cat-vfx), var(--cat-gold));
+  }
+
+  .hud-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 48px;
+    align-items: center;
+  }
+
+  @media (max-width: 900px) {
+    .hud-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Mock player name preview */
+  .hud-preview {
+    background:
+      radial-gradient(ellipse at center, rgba(40, 30, 70, 0.6), rgba(10, 8, 20, 0.9)),
+      linear-gradient(135deg, #0e0a18 0%, #1a0f2a 100%);
+    border-radius: 8px;
+    padding: 60px 30px 50px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hud-preview::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.3), transparent),
+      radial-gradient(1px 1px at 70% 30%, rgba(138, 107, 255, 0.4), transparent),
+      radial-gradient(1px 1px at 20% 20%, rgba(255,255,255,0.2), transparent);
+    pointer-events: none;
+  }
+
+  .hud-actor {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .hud-actor:last-child { margin-bottom: 0; }
+
+  .hud-name {
+    font-family: 'Sora', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-shadow:
+      -1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000,
+      1px 2px 4px rgba(0,0,0,0.8);
+    margin-bottom: 4px;
+  }
+
+  .hud-name.team-a { color: #50d9b0; }   /* TeamA green */
+  .hud-name.team-b { color: #ec5a78; }   /* TeamB red */
+  .hud-name.team-c { color: #5fa7ff; }   /* TeamC blue */
+
+  .hud-hp-bar {
+    width: 140px;
+    height: 8px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 1px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .hud-hp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #c84a4a, #ff6b6b);
+  }
+
+  .hud-hp-fill.team-a { background: linear-gradient(90deg, #2b8a5a, #50d9b0); }
+  .hud-hp-fill.team-b { background: linear-gradient(90deg, #c43e58, #ec5a78); }
+  .hud-hp-fill.team-c { background: linear-gradient(90deg, #4078c0, #5fa7ff); }
+
+  .hud-actor-body {
+    width: 26px;
+    height: 38px;
+    background: linear-gradient(180deg, #2a2240, #18132a);
+    border-radius: 4px 4px 2px 2px;
+    border: 1px solid rgba(255,255,255,0.1);
+    margin-top: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+
+  .hud-content h3 {
+    font-family: 'Sora', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+  }
+
+  .hud-content p {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 22px;
+  }
+
+  .hud-feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .hud-feature-list li {
+    padding: 8px 0;
+    padding-left: 24px;
+    position: relative;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .hud-feature-list li:last-child { border-bottom: none; }
+
+  .hud-feature-list li::before {
+    content: '◆';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    color: var(--cat-targeting);
+    font-size: 11px;
+  }
+
+  .hud-feature-list li strong { color: var(--text-primary); font-weight: 500; }
+
+  /* ============================================================
+     AUDIO PIPELINE GRID — 13 systems
+     ============================================================ */
+  .audio-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+
+  @media (max-width: 1000px) {
+    .audio-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .audio-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .audio-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    padding: 18px 18px 16px;
+    position: relative;
+    transition: all 0.2s ease;
+  }
+
+  .audio-card:hover {
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+    border-color: var(--cat-audio);
+  }
+
+  .audio-card-icon {
+    font-size: 22px;
+    margin-bottom: 10px;
+    line-height: 1;
+  }
+
+  .audio-card-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    letter-spacing: -0.005em;
+  }
+
+  .audio-card-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--cat-audio);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .audio-card-desc {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* Audio hierarchy ladder */
+  .audio-hierarchy {
+    background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 28px 32px;
+    margin-top: 24px;
+  }
+
+  .audio-hierarchy h4 {
+    font-family: 'Sora', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--cat-audio);
+    margin-bottom: 18px;
+    letter-spacing: 0.04em;
+  }
+
+  .ahr-row {
+    display: grid;
+    grid-template-columns: 160px 1fr 60px;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 0;
+  }
+
+  .ahr-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .ahr-bar-track {
+    height: 16px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .ahr-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cat-audio), var(--cat-audio-2));
+    border-radius: 2px;
+  }
+
+  .ahr-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--cat-audio);
+    text-align: right;
+    font-weight: 600;
+  }
+
+  .ahr-note {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: rgba(95, 167, 255, 0.08);
+    border-left: 3px solid var(--cat-audio);
+    border-radius: 3px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* AAA Industry comparison */
+  .aaa-compare {
+    background: linear-gradient(180deg, rgba(212, 176, 74, 0.06) 0%, var(--bg-card) 100%);
+    border: 1px solid var(--border-soft);
+    border-top: 2px solid var(--cat-gold);
+    border-radius: 8px;
+    padding: 28px 32px;
+    margin-top: 24px;
+  }
+
+  .aaa-compare h4 {
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--cat-gold);
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+  }
+
+  .aaa-compare p.aaa-sub {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  .aaa-row {
+    display: grid;
+    grid-template-columns: 160px 1fr 70px;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .aaa-row:last-child { border-bottom: none; }
+
+  .aaa-row.aaa-self {
+    background: rgba(212, 176, 74, 0.06);
+    margin: 0 -16px;
+    padding: 10px 16px;
+    border-radius: 3px;
+    border-bottom: none;
+    border: 1px solid rgba(212, 176, 74, 0.25);
+  }
+
+  .aaa-game {
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .aaa-self .aaa-game { color: var(--cat-gold); font-weight: 700; }
+
+  .aaa-track {
+    height: 10px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .aaa-fill {
+    height: 100%;
+    background: var(--text-muted);
+    border-radius: 2px;
+  }
+
+  .aaa-self .aaa-fill {
+    background: linear-gradient(90deg, var(--cat-gold), var(--cat-gold-2));
+    box-shadow: 0 0 8px rgba(212, 176, 74, 0.4);
+  }
+
+  .aaa-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: right;
+  }
+
+  .aaa-self .aaa-value { color: var(--cat-gold); font-weight: 600; }
+
+  /* ============================================================
+     TTK DUAL CHART — Sustained + Burst side by side
+     ============================================================ */
+  .ttk-dual-card {
+    background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 36px 40px 32px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .ttk-dual-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  @media (max-width: 900px) {
+    .ttk-dual-grid { grid-template-columns: 1fr; }
+  }
+
+  .ttk-chart-side h4 {
+    font-family: 'Sora', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    text-align: center;
+  }
+
+  .ttk-chart-side .ttk-sub {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .ttk-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    overflow: visible;
+  }
+
+  .ttk-grid-line {
+    stroke: var(--border-soft);
+    stroke-width: 1;
+    stroke-dasharray: 2 4;
+    opacity: 0.5;
+  }
+
+  .ttk-axis-label {
+    fill: var(--text-faint);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+  }
+
+  .ttk-axis-title {
+    fill: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .ttk-line-old {
+    fill: none;
+    stroke: var(--text-muted);
+    stroke-width: 2;
+    stroke-dasharray: 6 5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .ttk-line-new {
+    fill: none;
+    stroke: var(--purple-bright);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 6px rgba(138, 107, 255, 0.4));
+  }
+
+  .ttk-dot-old {
+    fill: var(--text-muted);
+    stroke: var(--bg-elevated);
+    stroke-width: 1.5;
+  }
+
+  .ttk-dot-new {
+    fill: var(--purple-bright);
+    stroke: var(--bg-elevated);
+    stroke-width: 2;
+  }
+
+  .ttk-endpoint-num {
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .ttk-endpoint-num.num-old { fill: var(--text-secondary); }
+  .ttk-endpoint-num.num-new { fill: var(--text-primary); }
+
+  .ttk-legend {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+
+  .ttk-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .ttk-legend-swatch {
+    width: 28px;
+    height: 3px;
+    border-radius: 2px;
+  }
+  .ttk-legend-swatch.swatch-old {
+    background: repeating-linear-gradient(90deg, var(--text-muted) 0 5px, transparent 5px 9px);
+    height: 2px;
+  }
+  .ttk-legend-swatch.swatch-new {
+    background: var(--purple-bright);
+    box-shadow: 0 0 6px rgba(138, 107, 255, 0.5);
+  }
+
+  .ttk-legend-item strong { color: var(--text-primary); font-weight: 600; }
+
+  .ttk-caption {
+    margin-top: 20px;
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .ttk-caption .ttk-accent { color: var(--purple-bright); font-weight: 600; }
+
+  /* ============================================================
+     ONESHOT SPOTLIGHT
+     ============================================================ */
+  .oneshot-card {
+    background: linear-gradient(180deg, rgba(236, 90, 120, 0.06) 0%, var(--bg-card) 60%);
+    border: 1px solid var(--border-soft);
+    border-top: 2px solid var(--cat-combat);
+    border-radius: 10px;
+    padding: 40px 40px 32px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .oneshot-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .oneshot-sub {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 36px;
+    max-width: 580px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  .oneshot-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    gap: 24px;
+    align-items: center;
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 768px) {
+    .oneshot-row { grid-template-columns: 1fr; }
+  }
+
+  .oneshot-scenario {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 24px 24px 22px;
+    position: relative;
+  }
+
+  .oneshot-scenario.before { border-left: 3px solid var(--cat-combat); }
+  .oneshot-scenario.after  { border-left: 3px solid var(--status-good); }
+
+  .oneshot-version {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    letter-spacing: 0.06em;
+  }
+
+  .oneshot-label {
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .oneshot-scenario.before .oneshot-label { color: var(--cat-combat); }
+  .oneshot-scenario.after  .oneshot-label { color: var(--status-good); }
+
+  .oneshot-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .oneshot-stat-num {
+    font-family: 'Sora', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .oneshot-scenario.before .oneshot-stat-num { color: var(--text-primary); }
+  .oneshot-scenario.after  .oneshot-stat-num { color: var(--text-primary); }
+
+  .oneshot-stat-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+
+  /* HP bar visualization */
+  .oneshot-hp-wrap {
+    margin-bottom: 12px;
+  }
+
+  .oneshot-hp-track {
+    height: 22px;
+    background: rgba(0,0,0,0.4);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--border-soft);
+  }
+
+  .oneshot-hp-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  .oneshot-hp-fill.empty {
+    width: 12%;
+    background: linear-gradient(90deg, #5a2030, #c84a4a);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+  }
+
+  .oneshot-hp-fill.healthy {
+    width: 47%;
+    background: linear-gradient(90deg, #2b8a5a, #50d9b0);
+  }
+
+  .oneshot-outcome {
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 8px 0;
+    margin-top: 16px;
+    border-top: 1px dashed var(--border-medium);
+  }
+
+  .oneshot-outcome.bad {
+    color: var(--cat-combat);
+  }
+
+  .oneshot-outcome.good {
+    color: var(--status-good);
+  }
+
+  .oneshot-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Sora', sans-serif;
+    font-size: 32px;
+    color: var(--purple-bright);
+    text-shadow: 0 0 12px rgba(138, 107, 255, 0.4);
+  }
+
+  @media (max-width: 768px) {
+    .oneshot-arrow { transform: rotate(90deg); }
+  }
+
+  /* ============================================================
+     BUG REPORT FLOW DIAGRAM
+     ============================================================ */
+  .br-showcase {
+    background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 40px 40px 36px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .br-flow {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    margin-bottom: 32px;
+  }
+
+  @media (max-width: 1000px) {
+    .br-flow { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .br-flow { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .br-step {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    padding: 16px 14px;
+    text-align: center;
+    position: relative;
+  }
+
+  .br-step::after {
+    content: '→';
+    position: absolute;
+    right: -16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--cat-tools);
+    font-size: 18px;
+    font-weight: 600;
+    z-index: 2;
+  }
+
+  .br-step:last-child::after { display: none; }
+
+  @media (max-width: 1000px) {
+    .br-step:nth-child(3n)::after { display: none; }
+  }
+
+  .br-step-num {
+    width: 26px;
+    height: 26px;
+    margin: 0 auto 10px;
+    border-radius: 50%;
+    border: 1.5px solid var(--cat-tools);
+    background: rgba(245, 167, 102, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Sora', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--cat-tools);
+  }
+
+  .br-step-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+    line-height: 1;
+  }
+
+  .br-step-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .br-step-desc {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  /* Bug report features grid */
+  .br-features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .br-features { grid-template-columns: 1fr; }
+  }
+
+  .br-feature {
+    padding: 14px 16px;
+    background: rgba(245, 167, 102, 0.05);
+    border: 1px solid var(--border-soft);
+    border-left: 2px solid var(--cat-tools);
+    border-radius: 4px;
+  }
+
+  .br-feature-name {
+    font-family: 'Sora', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--cat-tools);
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  .br-feature-detail {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .br-feature-detail code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(245, 167, 102, 0.12);
+    color: var(--cat-tools);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+
+  /* ============================================================
+     LOG SPAM REDUCTION BAR CHART
+     ============================================================ */
+  .logspam-card {
+    background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 40px 40px 32px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .logspam-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 100px;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 16px;
+  }
+
+  .logspam-row:last-child { margin-bottom: 0; }
+
+  .logspam-label {
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .logspam-label .version {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  .logspam-track {
+    height: 48px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+  }
+
+  .logspam-seg {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.85);
+    overflow: hidden;
+    border-right: 1px solid rgba(0,0,0,0.3);
+  }
+
+  .logspam-seg:last-child { border-right: none; }
+
+  .seg-death     { background: #ec5a78; }
+  .seg-bleed     { background: #d35fd0; }
+  .seg-status    { background: #b478ff; }
+  .seg-knockback { background: #5fa7ff; }
+  .seg-damage    { background: #5fdfee; }
+  .seg-xp        { background: #50d9b0; }
+  .seg-input     { background: #f5a766; }
+  .seg-other     { background: #6b6478; }
+
+  .logspam-after-fill {
+    width: 0.01%;
+    height: 100%;
+    background: var(--status-good);
+    box-shadow: 0 0 8px var(--status-good);
+  }
+
+  .logspam-after-empty {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: rgba(80, 217, 176, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Sora', sans-serif;
+    font-size: 12px;
+    color: var(--status-good);
+    font-weight: 600;
+    letter-spacing: 0.18em;
+  }
+
+  .logspam-total {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .logspam-total.before { color: var(--cat-combat); }
+  .logspam-total.after  { color: var(--status-good); }
+
+  .logspam-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 22px;
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  .logspam-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .logspam-legend-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .logspam-legend-item .ll-val {
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+
+  .logspam-insight {
+    margin-top: 28px;
+    padding: 16px 20px;
+    background: rgba(80, 217, 176, 0.06);
+    border-left: 3px solid var(--status-good);
+    border-radius: 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .logspam-insight strong { color: var(--status-good); font-weight: 600; }
+  .logspam-insight code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(80, 217, 176, 0.12);
+    color: var(--status-good);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+
+  /* ============================================================
+     BALANCE TABLE
+     ============================================================ */
+  .balance-table {
+    background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+  }
+
+  .balance-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .balance-row:last-child { border-bottom: none; }
+
+  .balance-row.balance-header {
+    background: rgba(124, 92, 255, 0.08);
+  }
+
+  .balance-cell { padding: 16px 22px; }
+  .balance-cell.cell-name {
+    padding-left: 28px;
+    border-right: 1px solid var(--border-soft);
+  }
+  .balance-cell.cell-before { border-right: 1px solid var(--border-soft); color: var(--text-muted); }
+  .balance-cell.cell-after  { border-right: 1px solid var(--border-soft); color: var(--text-primary); font-weight: 500; }
+
+  .balance-row.balance-header .balance-cell {
+    font-family: 'Sora', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: var(--purple-bright);
+    text-transform: uppercase;
+  }
+
+  .balance-feature {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+  }
+
+  .balance-desc {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .balance-change {
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .balance-change.buff { color: var(--status-good); }
+  .balance-change.nerf { color: var(--cat-combat); }
+  .balance-change.same { color: var(--text-muted); }
+
+  /* ============================================================
+     BUG FIX CARDS GRID
+     ============================================================ */
+  .fixes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  @media (max-width: 900px) {
+    .fixes-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .fixes-grid { grid-template-columns: 1fr; }
+  }
+
+  .fix-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-top: 2px solid var(--card-color, var(--purple-mid));
+    border-radius: 6px;
+    padding: 22px 22px 20px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .fix-card:hover {
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .fix-card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 80px; height: 80px;
+    background: radial-gradient(circle at top right, var(--card-color), transparent 70%);
+    opacity: 0.08;
+    pointer-events: none;
+  }
+
+  .fix-card-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .fix-num {
+    width: 34px;
+    height: 34px;
+    border: 1.5px solid var(--card-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--card-color);
+    flex-shrink: 0;
+  }
+
+  .fix-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .fix-cat {
+    font-family: 'Sora', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: var(--card-color);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .fix-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .fix-list li {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding-left: 14px;
+    position: relative;
+    margin-bottom: 6px;
+    line-height: 1.55;
+  }
+
+  .fix-list li:last-child { margin-bottom: 0; }
+
+  .fix-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 6px;
+    height: 1px;
+    background: var(--card-color);
+    opacity: 0.7;
+  }
+
+  .fix-list li strong { color: var(--card-color); font-weight: 500; filter: brightness(1.15); }
+
+  .card-combat   { --card-color: var(--cat-combat); }
+  .card-mp       { --card-color: var(--cat-mp); }
+  .card-vfx      { --card-color: var(--cat-vfx); }
+  .card-audio    { --card-color: var(--cat-audio); }
+  .card-resil    { --card-color: var(--cat-resil); }
+  .card-tools    { --card-color: var(--cat-tools); }
+  .card-targeting{ --card-color: var(--cat-targeting); }
+  .card-gold     { --card-color: var(--cat-gold); }
+
+  /* ============================================================
+     UNDER THE HOOD
+     ============================================================ */
+  .uth-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 768px) {
+    .uth-grid { grid-template-columns: 1fr; }
+  }
+
+  .uth-card {
+    background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 28px 28px 26px;
+  }
+
+  .uth-card-cat {
+    font-family: 'Sora', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    color: var(--cat-tools);
+  }
+
+  .uth-card-cat.cat-mp { color: var(--cat-mp); }
+  .uth-card-cat.cat-audio { color: var(--cat-audio); }
+
+  .uth-card-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 14px;
+    letter-spacing: -0.005em;
+  }
+
+  .uth-card p {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    margin-bottom: 16px;
+  }
+
+  .file-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .file-list li {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 6px 12px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 3px;
+    border-left: 2px solid var(--cat-tools);
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .file-list.list-audio li { border-left-color: var(--cat-audio); }
+  .file-list.list-mp li { border-left-color: var(--cat-mp); }
+
+  .file-list li strong { color: var(--text-primary); font-weight: 500; }
+  .file-list li .filesize { color: var(--text-faint); flex-shrink: 0; }
+
+  /* ============================================================
+     KNOWN ISSUES
+     ============================================================ */
+  .issues-list {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-left: 3px solid var(--cat-tools);
+    border-radius: 6px;
+    padding: 24px 28px;
+    list-style: none;
+    margin: 0;
+  }
+
+  .issues-list li {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 10px 0 10px 24px;
+    border-bottom: 1px dashed var(--border-soft);
+    position: relative;
+    line-height: 1.55;
+  }
+
+  .issues-list li:last-child { border-bottom: none; }
+
+  .issues-list li::before {
+    content: '◇';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    color: var(--cat-tools);
+    font-size: 12px;
+  }
+
+  .issues-list li strong { color: var(--text-primary); font-weight: 600; }
+  .issues-list li .sev {
+    display: inline-block;
+    font-family: 'Sora', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 2px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .sev.sev-critical { background: rgba(236, 90, 120, 0.18); color: var(--cat-combat); }
+  .sev.sev-high     { background: rgba(245, 167, 102, 0.18); color: var(--cat-tools); }
+  .sev.sev-low      { background: rgba(95, 167, 255, 0.16); color: var(--cat-audio); }
+
+  /* ============================================================
+     FOOTER
+     ============================================================ */
+  footer {
+    margin-top: 80px;
+    padding: 40px 0 60px;
+    border-top: 1px solid var(--border-soft);
+    text-align: center;
+  }
+
+  .release-banner {
+    margin: 0 auto 28px;
+    max-width: 640px;
+    padding: 28px 32px;
+    background: linear-gradient(135deg, rgba(124, 92, 255, 0.18), rgba(211, 95, 208, 0.10));
+    border: 1px solid var(--purple-soft);
+    border-radius: 8px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .release-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center top, rgba(138, 107, 255, 0.18), transparent 60%);
+    pointer-events: none;
+  }
+
+  .release-banner-eyebrow {
+    font-family: 'Sora', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    color: var(--purple-bright);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .release-banner-headline {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(20px, 3vw, 26px);
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .release-banner-headline .accent { color: var(--purple-bright); font-weight: 800; }
+
+  .release-banner-body {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+
+  .footer-game {
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    color: var(--purple-bright);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .footer-tag {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+
+  .footer-discord {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text-faint);
+    font-style: italic;
+  }
+
+  .footer-nav {
+    margin-bottom: 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+  }
+
+  .footer-nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s ease;
+  }
+
+  .footer-nav a:hover {
+    color: var(--purple-bright);
+    border-bottom-color: var(--purple-bright);
+  }
+</style>
+</head>
+
+<body>
+
+<!-- ================== HERO ================== -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <div class="game-name">Valkrune</div>
+        <h1 class="patch-title">Patch v0.0.4</h1>
+        <div class="patch-subtitle">Closed Alpha Polish Pass</div>
+      </div>
+      <div class="alpha-badge">
+        <div class="alpha-badge-label">Closed Alpha</div>
+        <div class="alpha-badge-date">2026-05-13</div>
+      </div>
+    </div>
+
+    <div class="tldr">
+      The biggest patch yet — <strong>three sessions merged into one release.</strong> A complete audio pipeline (13 systems shipped over 4 days), the new <strong>Bug Report</strong> system that posts straight from <code>F8</code> to Discord, a balance overhaul that finally kills the level-1 oneshot, the premium <strong>Player Name HUD</strong>, and a log-spam cleanup that took ~53,000 rows per match down to zero. No critical bugs remaining. Nine days until Closed Alpha launches.
+    </div>
+
+    <div class="stats-strip">
+      <div class="stat-cell">
+        <div class="stat-number">13</div>
+        <div class="stat-label">Audio Systems</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-number">2</div>
+        <div class="stat-label">New Pipelines</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-number">15</div>
+        <div class="stat-label">Bugs Squashed</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-number">53,000</div>
+        <div class="stat-label">Logs Killed</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-number">23</div>
+        <div class="stat-label">Files Changed</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<!-- ================== AUDIO PIPELINE ================== -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow eyebrow-audio">Feature · Audio Pipeline</div>
+      <h2 class="section-title">The Sound of Battle</h2>
+      <div class="section-subtitle">13 audio systems built from scratch in four days — combat, music, death, kill-confirm, and more</div>
+    </div>
+
+    <!-- 13 audio systems grid -->
+    <div class="audio-grid">
+      <div class="audio-card">
+        <div class="audio-card-icon">⚔️</div>
+        <div class="audio-card-title">Strike Audio</div>
+        <div class="audio-card-meta">Per-hero</div>
+        <div class="audio-card-desc">Basic, Heavy, Hero, and Friendly strike sounds — 2D local, 3D remote (30m max)</div>
+      </div>
+
+      <div class="audio-card">
+        <div class="audio-card-icon">🩸</div>
+        <div class="audio-card-title">Hit + Shield</div>
+        <div class="audio-card-meta">Per-hero</div>
+        <div class="audio-card-desc">Victim-side hit and shield-block reactions with full local volume</div>
+      </div>
+
+      <div class="audio-card">
+        <div class="audio-card-icon">💧</div>
+        <div class="audio-card-title">Bleed Audio</div>
+        <div class="audio-card-meta">Target-side</div>
+        <div class="audio-card-desc">Once-on-apply broadcast plus per-tick sound only the victim hears</div>
+      </div>
+
+      <div class="audio-card">
+        <div class="audio-card-icon">🥊</div>
+        <div class="audio-card-title">PANG-PANG-PONG</div>
+        <div class="audio-card-meta">Friendly Fire</div>
+        <div class="audio-card-desc">3-hit rhythm telegraphs the shove before any visual cue</div>
+      </div>
+
+      <div class="audio-card">
+        <div class="audio-card-icon">💨</div>
+        <div class="audio-card-title">Dash Audio</div>
+        <div class="audio-card-meta">2D + 3D</div>
+        <div class="audio-card-desc">Local dasher full volume, remote players hear it spatially attenuated</div>
+      </div>
+
+      <div class="audio-card">
+        <div class="audio-card-icon">💎</div>
+        <div class="audio-card-title">Pickup Audio</div>
+        <div class="audio-card-meta">Owner-only</div>
+        <div class="audio-card-desc">Rune shards and spirit souls — soft satisfying pickup feedback</div>
+      </div>
+
+      <div class="audio-card">
+        <div class="audio-card-icon">⭐</div>
+        <div class="audio-card-title">Level-Up</div>
+        <div class="audio-card-meta">Owner-only</div>
+        <div class="audio-card-desc">Personal progression chime when crossing each level threshold</div>
+      </div>
+
+      <div class="audio-card">
+        <div class="audio-card-icon">⏰</div>
+        <div class="audio-card-title">Match Countdown</div>
+        <div class="audio-card-meta">All players</div>
+        <div class="audio-card-desc">3-2-1 countdown audio synchronized to the visible timer</div>
+      </div>
+
+      <div class="audio-card">
+        <div class="audio-card-icon">🏆</div>
+        <div class="audio-card-title">Match End Stings</div>
+        <div class="audio-card-meta">All players</div>
+        <div class="audio-card-desc">Victory and Defeat stings on match-end transition</div>
+      </div>
+
+      <div class="audio-card">
+        <div class="audio-card-icon">📢</div>
+        <div class="audio-card-title">Event Announcements</div>
+        <div class="audio-card-meta">All players</div>
+        <div class="audio-card-desc">Battle Begins, Boss Spawned, and act-transition voice cues</div>
+      </div>
+
+      <div class="audio-card">
+        <div class="audio-card-icon">🎼</div>
+        <div class="audio-card-title">Background Music</div>
+        <div class="audio-card-meta">State machine</div>
+        <div class="audio-card-desc">Act-based music with boss-state override and seamless crossfade</div>
+      </div>
+
+      <div class="audio-card">
+        <div class="audio-card-icon">💀</div>
+        <div class="audio-card-title">Death Audio</div>
+        <div class="audio-card-meta">Owner-only</div>
+        <div class="audio-card-desc">Death grunt, looping heartbeat, and music ducked to 30% — only you hear it</div>
+      </div>
+
+      <div class="audio-card">
+        <div class="audio-card-icon">⚡</div>
+        <div class="audio-card-title">Kill-Confirm</div>
+        <div class="audio-card-meta">Targeted</div>
+        <div class="audio-card-desc">Only the killer hears it. Configurable delay defeats audio masking.</div>
+      </div>
+    </div>
+
+    <!-- Audio Hierarchy -->
+    <div class="audio-hierarchy">
+      <h4>Audio Hierarchy — Volume Discipline</h4>
+      <div class="ahr-row">
+        <div class="ahr-label">Combat / Abilities</div>
+        <div class="ahr-bar-track"><div class="ahr-bar-fill" style="width: 100%;"></div></div>
+        <div class="ahr-value">1.0</div>
+      </div>
+      <div class="ahr-row">
+        <div class="ahr-label">Friendly Strike</div>
+        <div class="ahr-bar-track"><div class="ahr-bar-fill" style="width: 70%;"></div></div>
+        <div class="ahr-value">0.7</div>
+      </div>
+      <div class="ahr-row">
+        <div class="ahr-label">Friendly Hit</div>
+        <div class="ahr-bar-track"><div class="ahr-bar-fill" style="width: 60%;"></div></div>
+        <div class="ahr-value">0.6</div>
+      </div>
+      <div class="ahr-row">
+        <div class="ahr-label">Pickup</div>
+        <div class="ahr-bar-track"><div class="ahr-bar-fill" style="width: 50%;"></div></div>
+        <div class="ahr-value">0.5</div>
+      </div>
+      <div class="ahr-row">
+        <div class="ahr-label">Bleed Tick</div>
+        <div class="ahr-bar-track"><div class="ahr-bar-fill" style="width: 40%;"></div></div>
+        <div class="ahr-value">0.4</div>
+      </div>
+      <div class="ahr-row">
+        <div class="ahr-label">Background Music</div>
+        <div class="ahr-bar-track"><div class="ahr-bar-fill" style="width: 30%;"></div></div>
+        <div class="ahr-value">0.3</div>
+      </div>
+      <div class="ahr-note">
+        With 13 audio systems running simultaneously in 9-player matches, volume discipline is critical. Music never exceeds 0.4 — combat feedback always wins the mix.
+      </div>
+    </div>
+
+    <!-- AAA Comparison: Kill-Confirm Delay -->
+    <div class="aaa-compare">
+      <h4>Kill-Confirm Delay — AAA Industry Reference</h4>
+      <p class="aaa-sub">When 4–5 audio events fire within 100ms of a kill, audio masking drowns the confirmation. A configurable delay turns it into a clean "after-event" — the same pattern Apex, Overwatch, and CS2 use.</p>
+
+      <div class="aaa-row">
+        <div class="aaa-game">Counter-Strike 2</div>
+        <div class="aaa-track"><div class="aaa-fill" style="width: 40%;"></div></div>
+        <div class="aaa-value">~100 ms</div>
+      </div>
+      <div class="aaa-row">
+        <div class="aaa-game">Overwatch 2</div>
+        <div class="aaa-track"><div class="aaa-fill" style="width: 60%;"></div></div>
+        <div class="aaa-value">~150 ms</div>
+      </div>
+      <div class="aaa-row aaa-self">
+        <div class="aaa-game">Valkrune</div>
+        <div class="aaa-track"><div class="aaa-fill" style="width: 60%;"></div></div>
+        <div class="aaa-value">150 ms</div>
+      </div>
+      <div class="aaa-row">
+        <div class="aaa-game">Apex Legends</div>
+        <div class="aaa-track"><div class="aaa-fill" style="width: 80%;"></div></div>
+        <div class="aaa-value">~200 ms</div>
+      </div>
+      <div class="aaa-row">
+        <div class="aaa-game">Doom Eternal</div>
+        <div class="aaa-track"><div class="aaa-fill" style="width: 100%;"></div></div>
+        <div class="aaa-value">~250 ms</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ================== PLAYER NAME HUD ================== -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow eyebrow-targeting">Feature · World HUD</div>
+      <h2 class="section-title">Premium Player Names</h2>
+      <div class="section-subtitle">Overwatch / Valorant-style team-colored names floating above every actor</div>
+    </div>
+
+    <div class="hud-showcase">
+      <div class="hud-grid">
+        <!-- Preview -->
+        <div class="hud-preview">
+          <div class="hud-actor">
+            <div class="hud-name team-a">Anna</div>
+            <div class="hud-hp-bar"><div class="hud-hp-fill team-a" style="width: 78%;"></div></div>
+            <div class="hud-actor-body"></div>
+          </div>
+
+          <div class="hud-actor">
+            <div class="hud-name team-b">Bjørn</div>
+            <div class="hud-hp-bar"><div class="hud-hp-fill team-b" style="width: 52%;"></div></div>
+            <div class="hud-actor-body"></div>
+          </div>
+
+          <div class="hud-actor">
+            <div class="hud-name team-c">Kenji</div>
+            <div class="hud-hp-bar"><div class="hud-hp-fill team-c" style="width: 91%;"></div></div>
+            <div class="hud-actor-body"></div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="hud-content">
+          <h3>Built like AAA, not stuck-on UI</h3>
+          <p>
+            Team-colored text with a black outline and soft drop shadow — readable against any background, billboarded to the camera so it's always facing you. Six code iterations and one font config pass to get it right.
+          </p>
+          <ul class="hud-feature-list">
+            <li><strong>Single source of truth</strong> for team color via <em>BotSpawnManager.GetTeamColor</em></li>
+            <li><strong>Multiplayer-ready</strong> from day one — uses the existing MatchDisplayNameService</li>
+            <li><strong>CJK, Thai, Devanagari support</strong> via dynamic atlas with fallback fonts</li>
+            <li><strong>Lazy-build</strong> under the HP-bar canvas — perspective and billboard stay consistent</li>
+            <li><strong>Stale-detection</strong> rebuilds UI cleanly on respawn</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ================== BUG REPORT SYSTEM ================== -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow eyebrow-tools">New System · Player Tools</div>
+      <h2 class="section-title">Press F8 — Bug Reports Live</h2>
+      <div class="section-subtitle">A complete in-game bug report pipeline that posts straight from your match into a private Discord forum</div>
+    </div>
+
+    <div class="br-showcase">
+      <!-- Flow diagram -->
+      <div class="br-flow">
+        <div class="br-step">
+          <div class="br-step-num">1</div>
+          <div class="br-step-icon">⌨️</div>
+          <div class="br-step-title">Press F8</div>
+          <div class="br-step-desc">Mid-match hotkey opens the panel</div>
+        </div>
+        <div class="br-step">
+          <div class="br-step-num">2</div>
+          <div class="br-step-icon">📝</div>
+          <div class="br-step-title">Title</div>
+          <div class="br-step-desc">Brief headline, 100 chars max</div>
+        </div>
+        <div class="br-step">
+          <div class="br-step-num">3</div>
+          <div class="br-step-icon">🏷️</div>
+          <div class="br-step-title">Category + Severity</div>
+          <div class="br-step-desc">7 categories · 4 severity levels</div>
+        </div>
+        <div class="br-step">
+          <div class="br-step-num">4</div>
+          <div class="br-step-icon">💬</div>
+          <div class="br-step-title">Describe</div>
+          <div class="br-step-desc">Up to 1,500 characters</div>
+        </div>
+        <div class="br-step">
+          <div class="br-step-num">5</div>
+          <div class="br-step-icon">📎</div>
+          <div class="br-step-title">Auto-attach Log</div>
+          <div class="br-step-desc">Last 750 KB of player.log</div>
+        </div>
+        <div class="br-step">
+          <div class="br-step-num">6</div>
+          <div class="br-step-icon">🚀</div>
+          <div class="br-step-title">Posted to Discord</div>
+          <div class="br-step-desc">Forum thread created instantly</div>
+        </div>
+      </div>
+
+      <!-- Features grid -->
+      <div class="br-features">
+        <div class="br-feature">
+          <div class="br-feature-name">Match Context Auto-Detect</div>
+          <div class="br-feature-detail">Captures the current match phase (<code>Playing</code>, <code>WaitingToStart</code>, <code>Ended</code>, or not in match) plus your player slot</div>
+        </div>
+        <div class="br-feature">
+          <div class="br-feature-name">Metadata Bundle</div>
+          <div class="br-feature-detail">Scene, version, platform, device, current FPS, and memory usage — all auto-attached</div>
+        </div>
+        <div class="br-feature">
+          <div class="br-feature-name">Input Focus Blocking</div>
+          <div class="br-feature-detail">WASD and dash can't fire while typing — checks all <code>TMP_InputField</code> elements globally</div>
+        </div>
+        <div class="br-feature">
+          <div class="br-feature-name">Discord Forum Routing</div>
+          <div class="br-feature-detail">Posts to <code>#bug-reports</code> with auto-named threads and 12 routing tags (7 categories, 5 status)</div>
+        </div>
+        <div class="br-feature">
+          <div class="br-feature-name">Private to Alpha Testers</div>
+          <div class="br-feature-detail">Channel locked to Boss, Moderator, and Alpha Tester roles only — no leaks of in-development data</div>
+        </div>
+        <div class="br-feature">
+          <div class="br-feature-name">Rate Limited Politely</div>
+          <div class="br-feature-detail">30-second slowmode prevents spam without blocking legitimate burst reports</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ================== BALANCE — TTK CURVES ================== -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow eyebrow-combat">Balance · Combat</div>
+      <h2 class="section-title">Time-to-Kill Overhaul</h2>
+      <div class="section-subtitle">Base HP raised to 60 across both templates · Burst multipliers nudged down · Sustained TTK up ~50% at every level</div>
+    </div>
+
+    <div class="ttk-dual-card">
+      <div class="ttk-dual-grid">
+
+        <!-- SUSTAINED TTK CHART -->
+        <div class="ttk-chart-side">
+          <h4>Sustained TTK</h4>
+          <div class="ttk-sub">Basic attack only — Attack Talent rank 3</div>
+          <svg class="ttk-svg" viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+            <!-- Grid lines (Y: 2, 4, 6, 8, 10) -->
+            <line class="ttk-grid-line" x1="40" y1="30"  x2="380" y2="30"  />
+            <line class="ttk-grid-line" x1="40" y1="80"  x2="380" y2="80"  />
+            <line class="ttk-grid-line" x1="40" y1="130" x2="380" y2="130" />
+            <line class="ttk-grid-line" x1="40" y1="180" x2="380" y2="180" />
+            <line class="ttk-grid-line" x1="40" y1="230" x2="380" y2="230" />
+
+            <text class="ttk-axis-label" x="32" y="34"  text-anchor="end">10</text>
+            <text class="ttk-axis-label" x="32" y="84"  text-anchor="end">8</text>
+            <text class="ttk-axis-label" x="32" y="134" text-anchor="end">6</text>
+            <text class="ttk-axis-label" x="32" y="184" text-anchor="end">4</text>
+            <text class="ttk-axis-label" x="32" y="234" text-anchor="end">2</text>
+
+            <!-- X labels -->
+            <text class="ttk-axis-label" x="40"  y="252" text-anchor="middle">L1</text>
+            <text class="ttk-axis-label" x="210" y="252" text-anchor="middle">L5</text>
+            <text class="ttk-axis-label" x="380" y="252" text-anchor="middle">L10</text>
+            <text class="ttk-axis-title" x="210" y="272" text-anchor="middle">Player level</text>
+
+            <!-- Old line (v0.0.3): L1=2.9 → 207.75, L5=4.4 → 170, L10=6.0 → 130 -->
+            <polyline class="ttk-line-old" points="40,207.75 210,170 380,130" />
+            <circle class="ttk-dot-old" cx="40"  cy="207.75" r="4" />
+            <circle class="ttk-dot-old" cx="210" cy="170"    r="4" />
+            <circle class="ttk-dot-old" cx="380" cy="130"    r="4" />
+
+            <!-- New line (v0.0.4): L1=4.3 → 172.5, L5=6.6 → 115, L10=9.1 → 52.5 -->
+            <polyline class="ttk-line-new" points="40,172.5 210,115 380,52.5" />
+            <circle class="ttk-dot-new" cx="40"  cy="172.5" r="5" />
+            <circle class="ttk-dot-new" cx="210" cy="115"   r="5" />
+            <circle class="ttk-dot-new" cx="380" cy="52.5"  r="5" />
+
+            <!-- Endpoint labels -->
+            <text class="ttk-endpoint-num num-old" x="28"  y="212" text-anchor="end">2.9</text>
+            <text class="ttk-endpoint-num num-new" x="28"  y="178" text-anchor="end">4.3</text>
+            <text class="ttk-endpoint-num num-old" x="392" y="135" text-anchor="start">6.0</text>
+            <text class="ttk-endpoint-num num-new" x="392" y="56"  text-anchor="start">9.1</text>
+          </svg>
+
+          <div class="ttk-caption">
+            <span class="ttk-accent">+52%</span> longer at L10 · <span class="ttk-accent">+48%</span> at L1 — more time to react, more space for talent decisions
+          </div>
+        </div>
+
+        <!-- BURST TTK CHART -->
+        <div class="ttk-chart-side">
+          <h4>Burst Combo TTK</h4>
+          <div class="ttk-sub">Dash + Heavy Strike + Rage Strike stacked, worst case</div>
+          <svg class="ttk-svg" viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+            <!-- Grid lines (Y: 1, 2, 3, 4, 5) -->
+            <line class="ttk-grid-line" x1="40" y1="30"  x2="380" y2="30"  />
+            <line class="ttk-grid-line" x1="40" y1="80"  x2="380" y2="80"  />
+            <line class="ttk-grid-line" x1="40" y1="130" x2="380" y2="130" />
+            <line class="ttk-grid-line" x1="40" y1="180" x2="380" y2="180" />
+            <line class="ttk-grid-line" x1="40" y1="230" x2="380" y2="230" />
+
+            <text class="ttk-axis-label" x="32" y="34"  text-anchor="end">5</text>
+            <text class="ttk-axis-label" x="32" y="84"  text-anchor="end">4</text>
+            <text class="ttk-axis-label" x="32" y="134" text-anchor="end">3</text>
+            <text class="ttk-axis-label" x="32" y="184" text-anchor="end">2</text>
+            <text class="ttk-axis-label" x="32" y="234" text-anchor="end">1</text>
+
+            <!-- "ONESHOT" danger zone -->
+            <rect x="40" y="230" width="340" height="20" fill="rgba(236, 90, 120, 0.06)" />
+
+            <!-- X labels -->
+            <text class="ttk-axis-label" x="40"  y="252" text-anchor="middle">L1</text>
+            <text class="ttk-axis-label" x="210" y="252" text-anchor="middle">L5</text>
+            <text class="ttk-axis-label" x="380" y="252" text-anchor="middle">L10</text>
+            <text class="ttk-axis-title" x="210" y="272" text-anchor="middle">Player level</text>
+
+            <!-- Old line: L1=1.1 → 244.5, L5=1.8 → 210, L10=2.5 → 175 -->
+            <polyline class="ttk-line-old" points="40,244.5 210,210 380,175" />
+            <circle class="ttk-dot-old" cx="40"  cy="244.5" r="4" />
+            <circle class="ttk-dot-old" cx="210" cy="210"   r="4" />
+            <circle class="ttk-dot-old" cx="380" cy="175"   r="4" />
+
+            <!-- New line: L1=1.9 → 205, L5=3.0 → 130, L10=4.2 → 70 -->
+            <polyline class="ttk-line-new" points="40,205 210,130 380,70" />
+            <circle class="ttk-dot-new" cx="40"  cy="205" r="5" />
+            <circle class="ttk-dot-new" cx="210" cy="130" r="5" />
+            <circle class="ttk-dot-new" cx="380" cy="70"  r="5" />
+
+            <!-- Endpoint labels -->
+            <text class="ttk-endpoint-num num-old" x="28"  y="249" text-anchor="end" fill="#ec5a78">1.1</text>
+            <text class="ttk-endpoint-num num-new" x="28"  y="210" text-anchor="end">1.9</text>
+            <text class="ttk-endpoint-num num-old" x="392" y="180" text-anchor="start">2.5</text>
+            <text class="ttk-endpoint-num num-new" x="392" y="73"  text-anchor="start">4.2</text>
+          </svg>
+
+          <div class="ttk-caption">
+            <span class="ttk-accent">+73%</span> at L1 — the oneshot threshold is gone · skill expression preserved at higher levels
+          </div>
+        </div>
+      </div>
+
+      <div class="ttk-legend">
+        <div class="ttk-legend-item">
+          <span class="ttk-legend-swatch swatch-old"></span>
+          <span><strong>v0.0.3</strong> · 40 HP base · old multipliers</span>
+        </div>
+        <div class="ttk-legend-item">
+          <span class="ttk-legend-swatch swatch-new"></span>
+          <span><strong>v0.0.4</strong> · 60 HP base · Dash 1.4× · Heavy 1.2×</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ================== ONESHOT SPOTLIGHT ================== -->
+<section style="padding-top: 24px;">
+  <div class="container">
+    <div class="oneshot-card">
+      <h3 class="oneshot-title">The Level-1 Oneshot — Eliminated</h3>
+      <p class="oneshot-sub">
+        At L1 a stacked burst combo could deliver 35 damage against 40 base HP — enough to delete a new player before they registered the attack. The HP/damage adjustments now guarantee at least one full hit's worth of reaction time, even in the worst case.
+      </p>
+
+      <div class="oneshot-row">
+
+        <!-- BEFORE -->
+        <div class="oneshot-scenario before">
+          <div class="oneshot-version">v0.0.3</div>
+          <div class="oneshot-label">Before</div>
+
+          <div class="oneshot-stats">
+            <div>
+              <div class="oneshot-stat-num">40</div>
+              <div class="oneshot-stat-label">Base HP</div>
+            </div>
+            <div>
+              <div class="oneshot-stat-num">35</div>
+              <div class="oneshot-stat-label">Burst Damage</div>
+            </div>
+          </div>
+
+          <div class="oneshot-hp-wrap">
+            <div class="oneshot-hp-track">
+              <div class="oneshot-hp-fill empty"></div>
+            </div>
+          </div>
+
+          <div class="oneshot-outcome bad">1.1 hits to kill · ONESHOT</div>
+        </div>
+
+        <!-- ARROW -->
+        <div class="oneshot-arrow">→</div>
+
+        <!-- AFTER -->
+        <div class="oneshot-scenario after">
+          <div class="oneshot-version">v0.0.4</div>
+          <div class="oneshot-label">After</div>
+
+          <div class="oneshot-stats">
+            <div>
+              <div class="oneshot-stat-num">60</div>
+              <div class="oneshot-stat-label">Base HP</div>
+            </div>
+            <div>
+              <div class="oneshot-stat-num">32</div>
+              <div class="oneshot-stat-label">Burst Damage</div>
+            </div>
+          </div>
+
+          <div class="oneshot-hp-wrap">
+            <div class="oneshot-hp-track">
+              <div class="oneshot-hp-fill healthy"></div>
+            </div>
+          </div>
+
+          <div class="oneshot-outcome good">1.9 hits to kill · SURVIVES</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ================== BALANCE TABLE ================== -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow eyebrow-combat">Balance · Detail</div>
+      <h2 class="section-title">Full Balance Diff</h2>
+      <div class="section-subtitle">Every changed multiplier and base value — nothing else touched</div>
+    </div>
+
+    <div class="balance-table">
+      <div class="balance-row balance-header">
+        <div class="balance-cell cell-name">Stat</div>
+        <div class="balance-cell cell-before">Before</div>
+        <div class="balance-cell cell-after">After</div>
+        <div class="balance-cell">Change</div>
+      </div>
+
+      <div class="balance-row">
+        <div class="balance-cell cell-name">
+          <div class="balance-feature">Human base HP</div>
+          <div class="balance-desc">Level 1 starting HP for players</div>
+        </div>
+        <div class="balance-cell cell-before">40</div>
+        <div class="balance-cell cell-after">60</div>
+        <div class="balance-cell"><span class="balance-change buff">+50%</span></div>
+      </div>
+
+      <div class="balance-row">
+        <div class="balance-cell cell-name">
+          <div class="balance-feature">Bot base HP</div>
+          <div class="balance-desc">Level 1 starting HP for bots</div>
+        </div>
+        <div class="balance-cell cell-before">50</div>
+        <div class="balance-cell cell-after">60</div>
+        <div class="balance-cell"><span class="balance-change buff">+20%</span></div>
+      </div>
+
+      <div class="balance-row">
+        <div class="balance-cell cell-name">
+          <div class="balance-feature">Dash Attack multiplier</div>
+          <div class="balance-desc">Damage on the dash strike</div>
+        </div>
+        <div class="balance-cell cell-before">1.5×</div>
+        <div class="balance-cell cell-after">1.4×</div>
+        <div class="balance-cell"><span class="balance-change nerf">−7%</span></div>
+      </div>
+
+      <div class="balance-row">
+        <div class="balance-cell cell-name">
+          <div class="balance-feature">Heavy Strike multiplier</div>
+          <div class="balance-desc">Every 3rd hit, the power blow</div>
+        </div>
+        <div class="balance-cell cell-before">1.3×</div>
+        <div class="balance-cell cell-after">1.2×</div>
+        <div class="balance-cell"><span class="balance-change nerf">−8%</span></div>
+      </div>
+
+      <div class="balance-row">
+        <div class="balance-cell cell-name">
+          <div class="balance-feature">Rage Strike bonus</div>
+          <div class="balance-desc">Flat damage on Rage</div>
+        </div>
+        <div class="balance-cell cell-before">+8</div>
+        <div class="balance-cell cell-after">+8</div>
+        <div class="balance-cell"><span class="balance-change same">unchanged</span></div>
+      </div>
+
+      <div class="balance-row">
+        <div class="balance-cell cell-name">
+          <div class="balance-feature">Execute multiplier (sub-30%)</div>
+          <div class="balance-desc">Damage bonus on low-HP targets</div>
+        </div>
+        <div class="balance-cell cell-before">1.5×</div>
+        <div class="balance-cell cell-after">1.5×</div>
+        <div class="balance-cell"><span class="balance-change same">unchanged</span></div>
+      </div>
+
+      <div class="balance-row">
+        <div class="balance-cell cell-name">
+          <div class="balance-feature">Attack Talent per rank</div>
+          <div class="balance-desc">Flat damage per talent rank</div>
+        </div>
+        <div class="balance-cell cell-before">+2</div>
+        <div class="balance-cell cell-after">+2</div>
+        <div class="balance-cell"><span class="balance-change same">unchanged</span></div>
+      </div>
+
+      <div class="balance-row">
+        <div class="balance-cell cell-name">
+          <div class="balance-feature">Per-level HP scaling</div>
+          <div class="balance-desc">Additive growth from level 1</div>
+        </div>
+        <div class="balance-cell cell-before">+19% / level</div>
+        <div class="balance-cell cell-after">+19% / level</div>
+        <div class="balance-cell"><span class="balance-change same">unchanged</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ================== LOG SPAM REDUCTION ================== -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow eyebrow-tools">Dev Quality · Diagnostics</div>
+      <h2 class="section-title">53,000 → 0</h2>
+      <div class="section-subtitle">Every verbose debug log now lives behind a single master flag — production builds ship silent</div>
+    </div>
+
+    <div class="logspam-card">
+
+      <!-- BEFORE -->
+      <div class="logspam-row">
+        <div class="logspam-label">
+          Before
+          <span class="version">v0.0.3 release</span>
+        </div>
+        <div class="logspam-track">
+          <div class="logspam-seg seg-death"     style="width: 3.6%;" title="DEATH-TIMING 1913"></div>
+          <div class="logspam-seg seg-bleed"     style="width: 3.0%;" title="BLEED 1593"></div>
+          <div class="logspam-seg seg-status"    style="width: 2.4%;" title="Status Effect 1257"></div>
+          <div class="logspam-seg seg-knockback" style="width: 1.4%;" title="Knockback 762"></div>
+          <div class="logspam-seg seg-damage"    style="width: 0.5%;" title="Damage Skip 260"></div>
+          <div class="logspam-seg seg-xp"        style="width: 0.4%;" title="XP DIAG 207"></div>
+          <div class="logspam-seg seg-input"     style="width: 0.2%;" title="Movement 122"></div>
+          <div class="logspam-seg seg-other"     style="width: 88.5%;" title="Other ~46896">~46,896 other rows</div>
+        </div>
+        <div class="logspam-total before">53,000</div>
+      </div>
+
+      <!-- AFTER -->
+      <div class="logspam-row">
+        <div class="logspam-label">
+          After
+          <span class="version">v0.0.4 release</span>
+        </div>
+        <div class="logspam-track">
+          <div class="logspam-after-empty">SILENT</div>
+        </div>
+        <div class="logspam-total after">0</div>
+      </div>
+
+      <!-- Legend -->
+      <div class="logspam-legend">
+        <div class="logspam-legend-item">
+          <span class="logspam-legend-dot seg-death"></span>
+          <span>DEATH-TIMING <span class="ll-val">1,913</span></span>
+        </div>
+        <div class="logspam-legend-item">
+          <span class="logspam-legend-dot seg-bleed"></span>
+          <span>Bleed apply/tick/expire <span class="ll-val">1,593</span></span>
+        </div>
+        <div class="logspam-legend-item">
+          <span class="logspam-legend-dot seg-status"></span>
+          <span>Status Effect Sync <span class="ll-val">1,257</span></span>
+        </div>
+        <div class="logspam-legend-item">
+          <span class="logspam-legend-dot seg-knockback"></span>
+          <span>Knockback <span class="ll-val">762</span></span>
+        </div>
+        <div class="logspam-legend-item">
+          <span class="logspam-legend-dot seg-damage"></span>
+          <span>Damage Skip <span class="ll-val">260</span></span>
+        </div>
+        <div class="logspam-legend-item">
+          <span class="logspam-legend-dot seg-xp"></span>
+          <span>Player XP <span class="ll-val">207</span></span>
+        </div>
+        <div class="logspam-legend-item">
+          <span class="logspam-legend-dot seg-input"></span>
+          <span>Movement Input <span class="ll-val">122</span></span>
+        </div>
+        <div class="logspam-legend-item">
+          <span class="logspam-legend-dot seg-other"></span>
+          <span>Other categories <span class="ll-val">~46,896</span></span>
+        </div>
+      </div>
+
+      <div class="logspam-insight">
+        <strong>How it works:</strong> All verbose logs route through <code>GameDebugConfig</code>. A single <code>masterEnable</code> flag silences the entire system. Thirteen Inspector-side flags were physically removed from components so they can't get re-enabled by accident on a prefab. <strong>The result:</strong> real errors are no longer drowned in noise, and Editor performance during long debug sessions improved measurably.
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ================== CRITICAL FIXES GRID ================== -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">Stability · Fixes</div>
+      <h2 class="section-title">Critical Fixes &amp; Polish</h2>
+      <div class="section-subtitle">15 bugs squashed across audio, combat, music, and UI — the most impactful listed below</div>
+    </div>
+
+    <div class="fixes-grid">
+
+      <div class="fix-card card-combat">
+        <div class="fix-card-head">
+          <div class="fix-num">01</div>
+          <div class="fix-title">Vortex Pull Double-Spawn</div>
+        </div>
+        <div class="fix-cat">Combat · Critical</div>
+        <ul class="fix-list">
+          <li>Two VFX + two audio per pull</li>
+          <li>Root cause: <strong>duplicate spawn path</strong></li>
+          <li>Now single broadcast per cast</li>
+        </ul>
+      </div>
+
+      <div class="fix-card card-audio">
+        <div class="fix-card-head">
+          <div class="fix-num">02</div>
+          <div class="fix-title">Death Audio Re-Triggers</div>
+        </div>
+        <div class="fix-cat">Audio · High</div>
+        <ul class="fix-list">
+          <li>Missed 2nd/3rd death of same player</li>
+          <li>Safety re-trigger recovers <strong>first-frame</strong> detection misses</li>
+          <li>Heartbeat + grunt always plays now</li>
+        </ul>
+      </div>
+
+      <div class="fix-card card-audio">
+        <div class="fix-card-head">
+          <div class="fix-num">03</div>
+          <div class="fix-title">Music Crossfade Silence</div>
+        </div>
+        <div class="fix-cat">Audio · Medium</div>
+        <ul class="fix-list">
+          <li><strong>SetDuckMode</strong> interrupted active crossfade</li>
+          <li>Ducked target volume now respected</li>
+          <li>No more dead silence after death</li>
+        </ul>
+      </div>
+
+      <div class="fix-card card-audio">
+        <div class="fix-card-head">
+          <div class="fix-num">04</div>
+          <div class="fix-title">Music Started Before Match</div>
+        </div>
+        <div class="fix-cat">Audio · Medium</div>
+        <ul class="fix-list">
+          <li>Initial Act-change fired pre-match</li>
+          <li><code>matchPlaying</code> flag guards Act transitions</li>
+          <li>Music starts exactly on <strong>"BATTLE BEGINS"</strong></li>
+        </ul>
+      </div>
+
+      <div class="fix-card card-audio">
+        <div class="fix-card-head">
+          <div class="fix-num">05</div>
+          <div class="fix-title">Boss Music Interrupted</div>
+        </div>
+        <div class="fix-cat">Audio · Medium</div>
+        <ul class="fix-list">
+          <li>Act-change overwrote boss music mid-fight</li>
+          <li><code>bossActive</code> now respected by handler</li>
+          <li>Boss music persists until Collapse phase</li>
+        </ul>
+      </div>
+
+      <div class="fix-card card-combat">
+        <div class="fix-card-head">
+          <div class="fix-num">06</div>
+          <div class="fix-title">Whirlwind Audio Loop Bleed</div>
+        </div>
+        <div class="fix-cat">Audio · Medium</div>
+        <ul class="fix-list">
+          <li>Whirlwind sound continued into endscreen freeze</li>
+          <li>Cleanup now hooks endscreen transition</li>
+          <li>Match-end is silent except for stings</li>
+        </ul>
+      </div>
+
+      <div class="fix-card card-tools">
+        <div class="fix-card-head">
+          <div class="fix-num">07</div>
+          <div class="fix-title">Bug Report Input Bleed</div>
+        </div>
+        <div class="fix-cat">Tools · High</div>
+        <ul class="fix-list">
+          <li>WASD / dash fired while typing in report</li>
+          <li>Global <strong>TMP_InputField</strong> focus check added</li>
+          <li>Movement blocked across all input fields</li>
+        </ul>
+      </div>
+
+      <div class="fix-card card-tools">
+        <div class="fix-card-head">
+          <div class="fix-num">08</div>
+          <div class="fix-title">Discord Forum HTTP 400</div>
+        </div>
+        <div class="fix-cat">Tools · High</div>
+        <ul class="fix-list">
+          <li>Missing <code>thread_name</code> in webhook payload</li>
+          <li>Forum channels require it; text channels don't</li>
+          <li>Auto-generated from report title now</li>
+        </ul>
+      </div>
+
+      <div class="fix-card card-targeting">
+        <div class="fix-card-head">
+          <div class="fix-num">09</div>
+          <div class="fix-title">Bug Report Dropdown Position</div>
+        </div>
+        <div class="fix-cat">UI · High</div>
+        <ul class="fix-list">
+          <li><strong>TMP_Dropdown</strong> popup spawned bottom-left</li>
+          <li>Options weren't selectable</li>
+          <li>Anchored and click-routed correctly</li>
+        </ul>
+      </div>
+
+      <div class="fix-card card-audio">
+        <div class="fix-card-head">
+          <div class="fix-num">10</div>
+          <div class="fix-title">Audio Pool GC Spikes</div>
+        </div>
+        <div class="fix-cat">Performance · Medium</div>
+        <ul class="fix-list">
+          <li><code>PlayClipAtPoint</code> created garbage on shard bursts</li>
+          <li>Pooled <strong>StrikeAudioPool</strong> reuses sources</li>
+          <li>Pitch ±0.08 variation prevents coalescing</li>
+        </ul>
+      </div>
+
+      <div class="fix-card card-vfx">
+        <div class="fix-card-head">
+          <div class="fix-num">11</div>
+          <div class="fix-title">Soul Shield Jitter Fix</div>
+        </div>
+        <div class="fix-cat">VFX · Low</div>
+        <ul class="fix-list">
+          <li>Visual radius flickered each frame</li>
+          <li>Fixed-radius rendering approach</li>
+          <li>Shield no longer breathes erratically</li>
+        </ul>
+      </div>
+
+      <div class="fix-card card-mp">
+        <div class="fix-card-head">
+          <div class="fix-num">12</div>
+          <div class="fix-title">Endscreen Death-State Bug</div>
+        </div>
+        <div class="fix-cat">MP · Medium</div>
+        <ul class="fix-list">
+          <li>Victory popup showed wrong state for dead players</li>
+          <li>Logic gate fixed in <strong>MatchEndScreen</strong></li>
+          <li>Endscreen reads alive-state correctly</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ================== UNDER THE HOOD ================== -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">Under the Hood</div>
+      <h2 class="section-title">Architecture Wins</h2>
+      <div class="section-subtitle">Three engineering investments that pay back every patch</div>
+    </div>
+
+    <div class="uth-grid">
+
+      <div class="uth-card">
+        <div class="uth-card-cat cat-audio">Code Footprint</div>
+        <h3 class="uth-card-title">New Audio Components</h3>
+        <p>
+          Four new components shipped this patch, plus deep extensions to existing combat and music systems. Every component is multiplayer-first — server-authoritative state with ClientRpc broadcasts where needed.
+        </p>
+        <ul class="file-list list-audio">
+          <li><strong>MatchMusicController.cs</strong> <span class="filesize">643 lines · NEW</span></li>
+          <li><strong>MatchActorHitAudio.cs</strong> <span class="filesize">308 lines · NEW</span></li>
+          <li><strong>StrikeAudioPool.cs</strong> <span class="filesize">277 lines · NEW</span></li>
+          <li><strong>BugReportPanel.cs</strong> <span class="filesize">746 lines · NEW</span></li>
+          <li><strong>BugReportPayload.cs</strong> <span class="filesize">302 lines · NEW</span></li>
+          <li><strong>BugReportSender.cs</strong> <span class="filesize">253 lines · NEW</span></li>
+          <li><strong>BugReportService.cs</strong> <span class="filesize">231 lines · NEW</span></li>
+          <li><strong>BugReportConfig.cs</strong> <span class="filesize">141 lines · NEW</span></li>
+        </ul>
+      </div>
+
+      <div class="uth-card">
+        <div class="uth-card-cat">Centralization</div>
+        <h3 class="uth-card-title">GameDebugConfig Owns Diagnostics</h3>
+        <p>
+          Every Inspector <code>verboseLogs</code> field was physically deleted from its component and replaced with a single <code>GameDebugConfig</code> flag. Six new audio flags plus six combat / movement flags now live behind a single <code>masterEnable</code> kill-switch.
+        </p>
+        <ul class="file-list">
+          <li><strong>StrikeAudioDebug</strong> <span class="filesize">strike broadcasts</span></li>
+          <li><strong>HitAudioDebug</strong> <span class="filesize">hit / shield / bleed</span></li>
+          <li><strong>DashAudioDebug</strong> <span class="filesize">2D + 3D dash</span></li>
+          <li><strong>MusicDebug</strong> <span class="filesize">state transitions</span></li>
+          <li><strong>StingAudioDebug</strong> <span class="filesize">match-end stings</span></li>
+          <li><strong>AudioPoolDebug</strong> <span class="filesize">voice stealing</span></li>
+          <li><strong>NameHudDebug</strong> <span class="filesize">player name resolve</span></li>
+          <li><strong>KnockbackDebug</strong> <span class="filesize">apply + ended</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ================== KNOWN ISSUES ================== -->
+<section style="padding-bottom: 24px;">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">Known Issues</div>
+      <h2 class="section-title">Tracked for v0.0.5</h2>
+      <div class="section-subtitle">Open items being worked before — or just after — alpha launch</div>
+    </div>
+
+    <ul class="issues-list">
+      <li>
+        <span class="sev sev-critical">Critical</span>
+        <strong>Mobile performance not yet validated</strong> — APK build + on-device FPS measurement is the alpha-blocker. Frame budget target: under 33ms (30fps minimum) on a mid-tier 2024 device.
+      </li>
+      <li>
+        <span class="sev sev-high">High</span>
+        <strong>Vortex Pull slow/debuff lost</strong> — a side-effect of the double-spawn fix. The pull itself works; the post-pull slow needs to be re-applied from the new single broadcast path.
+      </li>
+      <li>
+        <span class="sev sev-high">High</span>
+        <strong>Multiplayer stress test pending</strong> — 3 humans + 6 bots on a real Relay connection, sustained for a full match. Needed before opening alpha to wider testing.
+      </li>
+      <li>
+        <span class="sev sev-low">Low</span>
+        <strong>TalentManager / LevelScaledStats race</strong> — both write <code>cachedHealth.maxHealth</code> in Update. TalentManager wins in practice; not blocking, but on the post-alpha cleanup list.
+      </li>
+      <li>
+        <span class="sev sev-low">Low</span>
+        <strong>Whirlwind hit-audio not yet implemented</strong> — final audio feature on the backlog. Post-alpha.
+      </li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ================== FOOTER ================== -->
+<footer>
+  <div class="container">
+
+    <div class="release-banner">
+      <div class="release-banner-eyebrow">Save the Date</div>
+      <div class="release-banner-headline">
+        Closed Alpha opens for testers — <span class="accent">May 22, 2026</span>
+      </div>
+      <div class="release-banner-body">
+        Nine days out. Builds remain limited to invited testers until launch — and feedback through the new <code style="font-family: 'JetBrains Mono', monospace; color: var(--purple-bright);">F8</code> bug-report system shapes what ships.
+      </div>
+    </div>
+
+    <div class="footer-nav">
+      <a href="../">← All Patch Notes</a>
+    </div>
+
+    <div class="footer-game">Valkrune</div>
+    <div class="footer-tag">Closed Alpha · Patch v0.0.4</div>
+    <div class="footer-discord">Thanks for reading — feedback welcome on Discord.</div>
+  </div>
+</footer>
+
+</body>
+</html>
