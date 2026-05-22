@@ -8,14 +8,14 @@
 <!-- Open Graph / Discord / Twitter previews -->
 <meta property="og:type" content="website" />
 <meta property="og:title" content="Valkrune — Patch Notes" />
-<meta property="og:description" content="Updates and changes from the Closed Alpha. 3v3v3 Viking dark fantasy arena brawler — Closed Alpha opens May 22, 2026." />
+<meta property="og:description" content="Updates and changes from the Closed Alpha. 3v3v3 Viking dark fantasy arena brawler — Closed Alpha is live now." />
 <meta property="og:url" content="https://doxen92.github.io/Valkrune-PatchNotes/" />
 <meta property="og:site_name" content="Valkrune" />
 <meta name="twitter:card" content="summary" />
 <meta name="twitter:title" content="Valkrune — Patch Notes" />
 <meta name="twitter:description" content="Updates and changes from the Closed Alpha." />
 <meta name="theme-color" content="#7c5cff" />
-<meta name="description" content="Valkrune patch notes archive — updates from the Closed Alpha. Closed Alpha opens May 22, 2026." />
+<meta name="description" content="Valkrune patch notes archive — updates from the Closed Alpha. Live now." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -44,6 +44,7 @@
     --cat-audio:      #5fa7ff;
     --cat-resil:      #50d9b0;
     --cat-tools:      #f5a766;
+    --status-good:    #50d9b0;
     --shadow-card:    0 4px 24px rgba(0, 0, 0, 0.4);
     --shadow-card-hover: 0 8px 32px rgba(124, 92, 255, 0.18);
   }
@@ -126,6 +127,38 @@
   .hero-tagline .accent {
     color: var(--purple-bright);
     font-weight: 600;
+  }
+
+  .live-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+    padding: 8px 18px;
+    background: rgba(80, 217, 176, 0.12);
+    border: 1px solid var(--status-good);
+    border-radius: 100px;
+    font-family: 'Sora', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    color: var(--status-good);
+    text-transform: uppercase;
+  }
+
+  .live-pill::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--status-good);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--status-good);
+    animation: pulse-dot 1.8s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
   }
 
   section { padding: 72px 0; }
@@ -367,40 +400,54 @@
     font-style: italic;
   }
 
-  /* RELEASE BANNER */
-  .release-banner {
+  /* LIVE BANNER (replaces "Save the Date") */
+  .live-banner {
     margin: 0 auto;
     max-width: 640px;
     padding: 28px 32px;
-    background: linear-gradient(135deg, rgba(124, 92, 255, 0.18), rgba(211, 95, 208, 0.10));
-    border: 1px solid var(--purple-soft);
+    background: linear-gradient(135deg, rgba(80, 217, 176, 0.16), rgba(124, 92, 255, 0.10));
+    border: 1px solid var(--status-good);
     border-radius: 8px;
     text-align: center;
     position: relative;
     overflow: hidden;
   }
 
-  .release-banner::before {
+  .live-banner::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse at center top, rgba(138, 107, 255, 0.18), transparent 60%);
+    background: radial-gradient(ellipse at center top, rgba(80, 217, 176, 0.15), transparent 60%);
     pointer-events: none;
   }
 
-  .release-banner-eyebrow {
+  .live-banner-eyebrow {
     font-family: 'Sora', sans-serif;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.32em;
-    color: var(--purple-bright);
+    color: var(--status-good);
     text-transform: uppercase;
     margin-bottom: 12px;
     position: relative;
     z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
   }
 
-  .release-banner-headline {
+  .live-banner-eyebrow::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--status-good);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--status-good);
+    animation: pulse-dot 1.8s ease-in-out infinite;
+  }
+
+  .live-banner-headline {
     font-family: 'Sora', sans-serif;
     font-size: clamp(20px, 3vw, 24px);
     font-weight: 700;
@@ -412,12 +459,12 @@
     z-index: 1;
   }
 
-  .release-banner-headline .accent {
-    color: var(--purple-bright);
+  .live-banner-headline .accent {
+    color: var(--status-good);
     font-weight: 800;
   }
 
-  .release-banner-body {
+  .live-banner-body {
     font-family: 'DM Sans', sans-serif;
     font-size: 13px;
     color: var(--text-secondary);
@@ -473,6 +520,7 @@
       Updates and changes from the <span class="accent">Closed Alpha</span>.
       A 3v3v3 Viking dark-fantasy arena brawler in development.
     </p>
+    <div class="live-pill">Alpha Live</div>
   </div>
 </header>
 
@@ -482,38 +530,39 @@
   <div class="container">
     <div class="section-eyebrow">Latest Release</div>
 
-    <a class="featured-card" href="0.0.4/">
+    <a class="featured-card" href="0.0.5/">
       <div class="featured-card-head">
         <span class="latest-badge">Latest</span>
-        <span class="patch-version">v0.0.4</span>
-        <span class="patch-date">2026-05-13</span>
+        <span class="patch-version">v0.0.5</span>
+        <span class="patch-date">2026-05-23</span>
       </div>
 
-      <h2 class="featured-title">Closed Alpha Polish Pass</h2>
+      <h2 class="featured-title">Closed Alpha Launch · Multiplayer Parity</h2>
 
       <p class="featured-desc">
-        The biggest patch yet — three sessions merged into one release. A complete audio pipeline (13 systems shipped over four days),
-        the new Bug Report system that posts straight from <strong>F8</strong> to Discord, a balance overhaul that finally kills the
-        level-1 oneshot, premium AAA-style player name HUDs, and a log-spam cleanup that took roughly 53,000 rows per match down to zero.
-        Nine days until Closed Alpha launches.
+        The Closed Alpha launch patch. Eleven multiplayer fixes bring host and client to perfect parity —
+        same names, same audio, same death-cam. The Harbinger boss gets a major damage upgrade
+        (Shockwave Pulse <strong>+130%</strong>), damage scaling reworked so a level-10 burst combo can no
+        longer consume 60% of a target's HP in one swing, full Settings menu, Spawn Protection,
+        the <strong>complete 15-icon Talent set</strong>, and player.log <code>.zip</code> compression all ship alongside.
       </p>
 
       <div class="featured-stats">
         <div>
-          <div class="featured-stat-num">13</div>
-          <div class="featured-stat-label">Audio Systems</div>
+          <div class="featured-stat-num">11</div>
+          <div class="featured-stat-label">MP Parity Fixes</div>
         </div>
         <div>
-          <div class="featured-stat-num">2</div>
-          <div class="featured-stat-label">New Pipelines</div>
+          <div class="featured-stat-num">3</div>
+          <div class="featured-stat-label">New Systems</div>
         </div>
         <div>
-          <div class="featured-stat-num">15</div>
-          <div class="featured-stat-label">Bugs Squashed</div>
+          <div class="featured-stat-num">+130%</div>
+          <div class="featured-stat-label">Boss Damage</div>
         </div>
         <div>
-          <div class="featured-stat-num">53,000</div>
-          <div class="featured-stat-label">Logs Killed</div>
+          <div class="featured-stat-num">20+</div>
+          <div class="featured-stat-label">Files Changed</div>
         </div>
       </div>
 
@@ -529,6 +578,16 @@
     <h2 class="section-title">All Patches</h2>
 
     <div class="patch-list">
+
+      <!-- 0.0.5 -->
+      <a class="patch-list-item" href="0.0.5/">
+        <div class="patch-list-version">v0.0.5</div>
+        <div class="patch-list-content">
+          <div class="patch-list-title">Closed Alpha Launch · Multiplayer Parity</div>
+          <div class="patch-list-desc">11 MP fixes, boss balance overhaul, damage scaling rework, settings menu, spawn protection</div>
+        </div>
+        <div class="patch-list-date">2026-05-23</div>
+      </a>
 
       <!-- 0.0.4 -->
       <a class="patch-list-item" href="0.0.4/">
@@ -555,23 +614,23 @@
     <!-- Coming soon -->
     <div class="coming-soon">
       <div class="coming-soon-label">Coming Soon</div>
-      <div class="coming-soon-text">Patch v0.0.5 — alpha launch + post-launch polish</div>
+      <div class="coming-soon-text">Patch v0.0.6 — spawn bug repro, Android APK, more talent icons, mid-match reconnect</div>
     </div>
   </div>
 </section>
 
 
-<!-- ================== RELEASE BANNER ================== -->
+<!-- ================== LIVE BANNER ================== -->
 <section style="padding-top: 24px; padding-bottom: 24px;">
   <div class="container">
-    <div class="release-banner">
-      <div class="release-banner-eyebrow">Save the Date</div>
-      <div class="release-banner-headline">
-        Closed Alpha opens for testers — <span class="accent">May 22, 2026</span>
+    <div class="live-banner">
+      <div class="live-banner-eyebrow">Closed Alpha — Live Now</div>
+      <div class="live-banner-headline">
+        Thank you for playing <span class="accent">Valkrune</span>
       </div>
-      <div class="release-banner-body">
-        Valkrune is not yet released. The closed alpha goes live for testers on May 22, 2026.
-        Until then, builds remain limited — feedback shapes what ships.
+      <div class="live-banner-body">
+        The alpha is live. Press F8 in any match to send a bug report straight to Discord —
+        every report shapes the next patch.
       </div>
     </div>
   </div>
